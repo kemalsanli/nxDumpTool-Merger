@@ -1,5 +1,9 @@
 # nxDumpTool-Merger
-Simple app to merge splitted dumps.
+![visitors](https://visitor-badge.deta.dev/badge?page_id=kemalsanli.nxDumpTool-Merger&left_color=red&right_color=green)
+[![Download](https://img.shields.io/github/downloads/kemalsanli/nxDumpTool-Merger/total?)](https://github.com/kemalsanli/nxDumpTool-Merger/releases)
+
+
+Simple app to merge splitted dumps on macOS.
 
 <img width="592" alt="Screenshot 2023-01-20 at 20 22 34" src="https://user-images.githubusercontent.com/22424289/213763682-7fa5df66-859b-4f08-ac16-3b247bb2ce05.png">
 
