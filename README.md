@@ -1,2 +1,30 @@
 # nxDumpTool-Merger
 Simple app to merge splitted dumps.
+
+<img width="592" alt="Screenshot 2023-01-20 at 20 22 34" src="https://user-images.githubusercontent.com/22424289/213763682-7fa5df66-859b-4f08-ac16-3b247bb2ce05.png">
+
+
+
+
+Video tutorial:
+
+
+https://user-images.githubusercontent.com/22424289/213762838-d7b561a6-7328-4f46-adea-6e303cefdddb.mp4
+
+
+
+
+
+
+Note: You can always leave output blank, default output is same folder as dump folder.
+
+Note 2: Filename copies from foldername, for example you have Some dump.nsp folder your .nsp name will be "some dump.nsp". 
+
+Note 3: Just copy from sd card and select input folder it does everything.
+
+Note 4: It's kinda shame but, while merging app looks stuck. Be patient it will be okay.
+
+
+
+
+ALWAYS OPEN FOR MR/PR'S
