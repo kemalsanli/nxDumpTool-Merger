@@ -13,7 +13,11 @@ Simple app to merge splitted dumps on macOS.
 Video tutorial:
 
 
-https://user-images.githubusercontent.com/22424289/213762838-d7b561a6-7328-4f46-adea-6e303cefdddb.mp4
+
+
+
+https://github.com/kemalsanli/nxDumpTool-Merger/assets/22424289/033a10ab-12bd-4dc3-b69b-982e4f99d0b9
+
 
 
 
@@ -26,9 +30,8 @@ Note 2: Filename copies from foldername, for example you have Some dump.nsp fold
 
 Note 3: Just copy from sd card and select input folder it does everything.
 
-Note 4: It's kinda shame but, while merging app looks stuck. Be patient it will be okay.
 
 
-
+ 
 
 ALWAYS OPEN FOR MR/PR'S
