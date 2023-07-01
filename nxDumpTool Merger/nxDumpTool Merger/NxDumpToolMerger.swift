@@ -13,17 +13,14 @@ class NxDumpToolMerger: NSViewController {
     @IBOutlet weak var inputTextInput: NSTextField!
     @IBOutlet weak var outputTextInput: NSTextField!
     @IBOutlet weak var convertButton: NSButton!
-    
+    @IBOutlet weak var progressBar: NSProgressIndicator!
     
     var gameFoldersPath = Array<URL>()
-    var total = 0 {
-        didSet {
-            convertButton.isEnabled = total == gameFoldersPath.count
-        }
-    }
+    var total = 0
     
     var outputFolderExist: Bool = false
     var outputPath: URL = URL(fileURLWithPath: "")
+    var convertIndex: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,18 +62,30 @@ class NxDumpToolMerger: NSViewController {
     
     @IBAction func convertButton(_ sender: Any) {
         convertButton.isEnabled = false
-        for path in gameFoldersPath {
-            let directoryContents = try! FileManager.default.contentsOfDirectory(
-                at: path,
-                includingPropertiesForKeys: nil
-            )
-            let mergedData = performMergeOperation(files: directoryContents, url: path)
-            //saveData(url: path, data: mergedData)
-            print(mergedData)
+        convertLoop()
+    }
+    
+    func convertLoop() {
+        let directoryContents = try! FileManager.default.contentsOfDirectory(
+            at: gameFoldersPath[convertIndex],
+            includingPropertiesForKeys: nil
+        )
+        performMergeOperation(files: directoryContents, url: gameFoldersPath[convertIndex]) { [weak self] _ in
+            guard let self else { return }
+            self.total = self.total + 1
+            
+            if convertIndex == gameFoldersPath.count - 1 {
+                convertIndex = 0
+            } else {
+                convertIndex = convertIndex + 1
+                convertLoop()
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.refreshCounter()
+            }
         }
-        
-        total = 0
-        gameCount.stringValue = "Finished"
     }
     
     func getFolderName(path: URL) -> String {
@@ -129,24 +138,27 @@ class NxDumpToolMerger: NSViewController {
         return directoryContents
     }
     
-    func performMergeOperation(files: Array<URL>, url: URL) -> String {
-        var commandArray: Array<String> = []
-        var createCommand = ""
-        
-        for perFile in files where perFile.pathExtension == "" {
-            if !isFileExtensionIncorrect(url: perFile, fileTypes: "nsp", "xci") {
-                commandArray.append("\"\( prepareStringForShell(releatedString: perFile.relativeString) )\" ")
+    func performMergeOperation(files: Array<URL>, url: URL, completion: @escaping (String) -> Void) {
+        DispatchQueue.global().async { [weak self] in
+            guard let self else {return}
+            var commandArray: Array<String> = []
+            var createCommand = ""
+            
+            for perFile in files where perFile.pathExtension == "" {
+                if !isFileExtensionIncorrect(url: perFile, fileTypes: "nsp", "xci") {
+                    commandArray.append("\"\( prepareStringForShell(releatedString: perFile.relativeString) )\" ")
+                }
             }
+            
+            commandArray.sort()
+            for command in commandArray {
+                createCommand = createCommand + command
+            }
+            
+            let destinationPath = outputFolderExist ? outputPath : url
+            print("cat \(createCommand)> \"\( prepareStringForShell(releatedString: destinationPath.absoluteString) + getFolderName(path: url))\" ")
+            completion( try! safeShell("cat \(createCommand)> \"\( prepareStringForShell(releatedString: destinationPath.absoluteString) + getFolderName(path: url))\" "))
         }
-        
-        commandArray.sort()
-        for command in commandArray {
-            createCommand = createCommand + command
-        }
-        
-        let destinationPath = outputFolderExist ? outputPath : url
-        print("cat \(createCommand)> \"\( prepareStringForShell(releatedString: destinationPath.absoluteString) + getFolderName(path: url))\" ")
-        return try! safeShell("cat \(createCommand)> \"\( prepareStringForShell(releatedString: destinationPath.absoluteString) + getFolderName(path: url))\" ")
     }
     
     func isFileExtensionIncorrect(url: URL, fileTypes: String...) -> Bool {
@@ -178,8 +190,7 @@ class NxDumpToolMerger: NSViewController {
         DispatchQueue.global(qos: .background).async {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                self.total = self.total + 1
-                self.gameCount.stringValue = "Merging \(self.total) of \(self.gameFoldersPath.count) game."
+                refreshCounter()
             }
             try! task.run() //<--updated
         }
@@ -188,6 +199,27 @@ class NxDumpToolMerger: NSViewController {
         let output = String(data: data, encoding: .utf8)!
         
         return output
+    }
+    func refreshCounter() {
+        if self.total != self.gameFoldersPath.count {
+            progressBar.isHidden = false
+            self.convertButton.isEnabled = false
+            progressBar.doubleValue = calculateProgress()
+            print("calc prgoress: \(calculateProgress())")
+            self.gameCount.stringValue = "Merging \(self.total + 1) of \(self.gameFoldersPath.count) game."
+        } else {
+            self.total = 0
+            self.gameCount.stringValue = "Finished!"
+            self.convertButton.isEnabled = true
+            progressBar.isHidden = true
+        }
+        
+    }
+    
+    func calculateProgress() -> Double {
+        let convertedFolderCount: Double = Double(gameFoldersPath.count)
+        let convertedTotalCount: Double = Double(total + 1)
+        return (convertedTotalCount / convertedFolderCount) * 100
     }
     
     func fileSelector(title: String, canSelectFiles: Bool, allowedTypes: Array<String>? = []) -> NSOpenPanel {
